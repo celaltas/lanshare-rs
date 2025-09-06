@@ -1,0 +1,9 @@
+[package]
+name = "lanshare-core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+lanshare-proto = { path = "../lanshare-proto" }
+# tokio = { version = "1.47.1", default-features = false, features = ["macros", "rt-multi-thread", "net"] }
+

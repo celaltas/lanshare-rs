@@ -1,0 +1,8 @@
+[package]
+name = "lanshare-rs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+lanshare-core = { path = "../lanshare-core" }
+

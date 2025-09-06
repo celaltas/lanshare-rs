@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "lanshare-core",
+    "lanshare-proto",
+    "lanshare-cli",
+    "lanshare-tests",
+    "lanshare-rs"
+]
+resolver = "2"
