@@ -1,4 +1,4 @@
-mod message_header;
 mod file_message;
+mod message_header;
+pub use file_message::FileMessage;
 pub use message_header::MessageHeader;
-pub use file_message::{read_file_message, send_file_message};

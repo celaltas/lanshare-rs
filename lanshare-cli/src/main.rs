@@ -1,3 +1,4 @@
+use lanshare_proto::FileMessage;
 use std::net::TcpStream;
 
 pub enum Command {
@@ -34,7 +35,7 @@ fn main() {
             }
             match TcpStream::connect(format!("{}:8080", ip_address)) {
                 Ok(mut stream) => {
-                    if let Err(e) = lanshare_proto::send_file_message(&mut stream, path) {
+                    if let Err(e) = FileMessage::send(&mut stream, path) {
                         eprintln!("Failed to send file: {}", e);
                         std::process::exit(1);
                     } else {
