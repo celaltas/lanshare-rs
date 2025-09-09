@@ -29,8 +29,12 @@ impl FileStorage {
         })
     }
 
-    pub fn create_transaction(&self, filename: &str) -> io::Result<Transaction> {
-        Transaction::new(filename, &self.tmp_dir, &self.final_dir)
+    pub fn create_transaction(
+        &self,
+        filename: &str,
+        expected_sha: [u8; 32],
+    ) -> io::Result<Transaction> {
+        Transaction::new(filename, expected_sha, &self.tmp_dir, &self.final_dir)
     }
 }
 

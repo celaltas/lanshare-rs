@@ -1,8 +1,10 @@
 use std::{
     fs::File,
-    io::{self, Read, Write},
+    io::{self, Read, Seek, Write},
     path::Path,
 };
+
+use sha2::{Digest, Sha256};
 
 use crate::MessageHeader;
 
@@ -27,22 +29,54 @@ impl FileMessage {
     }
 
     pub fn send<W: Write>(mut stream: W, path: &Path) -> io::Result<()> {
-        let file = File::open(path)?;
+        let mut file = File::open(path)?;
         let metadata = file.metadata()?;
         let filename = path
             .file_name()
             .and_then(|name| name.to_str())
             .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "Invalid filename"))?
             .to_string();
+
+        let sha256: [u8; 32] = {
+            let mut hasher = Sha256::new();
+            let mut buffer = [0u8; 8192];
+            loop {
+                let bytes_read = file.read(&mut buffer)?;
+                if bytes_read == 0 {
+                    break;
+                }
+                hasher.update(&buffer[..bytes_read]);
+            }
+            hasher.finalize().into()
+        };
+
+        file.seek(io::SeekFrom::Start(0))?;
+
         let size = metadata.len();
         let header = MessageHeader {
             name: filename,
             size,
+            sha256,
         };
+
         header.write_to(&mut stream)?;
-        let mut reader = io::BufReader::new(file);
-        io::copy(&mut reader, &mut stream)?;
+
+        io::copy(&mut file, &mut stream)?;
         stream.flush()?;
         Ok(())
+    }
+
+    fn hash_file<T: Read>(mut reader: T) -> io::Result<[u8; 32]> {
+        let mut hasher = Sha256::new();
+        let mut buffer = [0u8; 8192];
+        loop {
+            let bytes_read = reader.read(&mut buffer)?;
+            if bytes_read == 0 {
+                break;
+            }
+            hasher.update(&buffer[..bytes_read]);
+        }
+        let result = hasher.finalize();
+        Ok(result.into())
     }
 }

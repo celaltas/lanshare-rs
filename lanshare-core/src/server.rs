@@ -40,7 +40,7 @@ fn handle_connection(mut stream: TcpStream) {
         }
     };
 
-    let mut tx = match fs.create_transaction(&header.name) {
+    let mut tx = match fs.create_transaction(&header.name, header.sha256) {
         Ok(tx) => tx,
         Err(e) => {
             eprintln!("Failed to create transaction: {}", e);
@@ -48,7 +48,7 @@ fn handle_connection(mut stream: TcpStream) {
         }
     };
 
-    let result = FileMessage::receive(&mut stream, tx.writer(), header.size);
+    let result = FileMessage::receive(&mut stream, &mut tx.writer(), header.size);
 
     match result {
         Ok(_) => {
