@@ -37,19 +37,7 @@ impl FileMessage {
             .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "Invalid filename"))?
             .to_string();
 
-        let sha256: [u8; 32] = {
-            let mut hasher = Sha256::new();
-            let mut buffer = [0u8; 8192];
-            loop {
-                let bytes_read = file.read(&mut buffer)?;
-                if bytes_read == 0 {
-                    break;
-                }
-                hasher.update(&buffer[..bytes_read]);
-            }
-            hasher.finalize().into()
-        };
-
+        let sha256: [u8; 32] = FileMessage::hash_file(&mut file)?;
         file.seek(io::SeekFrom::Start(0))?;
 
         let size = metadata.len();
@@ -66,7 +54,7 @@ impl FileMessage {
         Ok(())
     }
 
-    fn hash_file<T: Read>(mut reader: T) -> io::Result<[u8; 32]> {
+    fn hash_file<T: Read>(reader: &mut T) -> io::Result<[u8; 32]> {
         let mut hasher = Sha256::new();
         let mut buffer = [0u8; 8192];
         loop {
