@@ -60,13 +60,33 @@ fn handle_connection(mut stream: TcpStream) {
         },
     };
 
-    let remaining = header.size.saturating_sub(tx.written_bytes);
-    println!(
-        "Expecting {} more bytes (total size = {}, written = {})",
-        remaining, header.size, tx.written_bytes
-    );
+    let result = {
+        let already_written = tx.written_bytes;
+        let mut writer = tx.writer();
+        let remaining = header.size.saturating_sub(already_written);
 
-    let result = FileMessage::receive(&mut stream, &mut tx.writer(), header.size);
+        if remaining > 0 {
+            println!(
+                "Need to skip {} bytes and read {} more bytes",
+                already_written, remaining
+            );
+
+            if already_written > 0 {
+                println!(
+                    "Skipping {} bytes that we already wrote...",
+                    already_written
+                );
+                let _ = FileMessage::skip_bytes(&mut stream, already_written);
+            }
+
+            println!("Reading remaining {} bytes...", remaining);
+            FileMessage::receive(&mut stream, &mut writer, remaining)
+        } else {
+            println!("File already complete, skipping entire stream");
+            let _ = FileMessage::skip_bytes(&mut stream, header.size);
+            Ok(())
+        }
+    };
 
     match result {
         Ok(_) => match tx.commit() {

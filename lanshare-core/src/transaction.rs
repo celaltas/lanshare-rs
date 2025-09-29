@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TransactionMeta {
     pub id: String,
     pub filename: String,
@@ -21,6 +21,7 @@ pub struct TransactionMeta {
 
 impl TransactionMeta {
     pub fn save(&self, path: &Path) -> std::io::Result<()> {
+        println!("meta saving at: {:#?}", path);
         let json = serde_json::to_string_pretty(self)?;
         std::fs::write(path, json)?;
         Ok(())
@@ -33,6 +34,7 @@ impl TransactionMeta {
     }
 }
 
+#[derive(Debug)]
 pub struct Transaction {
     pub id: String,
     pub tmp_path: PathBuf,
@@ -76,18 +78,19 @@ pub struct TransactionWriter<'a> {
     tx: &'a mut Transaction,
 }
 
+impl<'a> Drop for TransactionWriter<'a> {
+    fn drop(&mut self) {
+        if let Err(e) = self.tx.persist_meta() {
+            eprintln!("Failed to persist meta on drop: {}", e);
+        }
+    }
+}
+
 impl<'a> Write for TransactionWriter<'a> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         let n = self.tx.file.write(buf)?;
         self.tx.hasher.update(&buf[..n]);
         self.tx.written_bytes += n as u64;
-
-        if self.tx.written_bytes % (1024 * 1024) < n as u64
-            || self.tx.written_bytes == self.tx.total_size
-        {
-            self.tx.persist_meta()?;
-        }
-
         Ok(n)
     }
 
@@ -122,7 +125,7 @@ impl Transaction {
         let meta = TransactionMeta {
             id: tx_id.clone(),
             filename: filename.to_owned(),
-            tmp_path: tmp_dir.to_string_lossy().to_string(),
+            tmp_path: file_path.to_string_lossy().to_string(),
             final_path: final_path.to_string_lossy().to_string(),
             expected_sha: hex_string,
             written_bytes: 0,
@@ -174,12 +177,19 @@ impl Transaction {
 
     pub fn resume(meta: TransactionMeta) -> io::Result<Self> {
         let tmp_dir = PathBuf::from(&meta.tmp_path);
-        let file_path = tmp_dir.join(format!("{}.part", meta.filename));
+        let file_path = PathBuf::from(&meta.tmp_path);
         let final_path = PathBuf::from(&meta.final_path);
 
-        let mut file = std::fs::OpenOptions::new()
-            .append(true)
-            .open(&file_path)?;
+        let mut expected_sha = [0u8; 32];
+
+        for (i, chunk) in meta.expected_sha.as_bytes().chunks(2).enumerate() {
+            let byte_str = std::str::from_utf8(chunk)
+                .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "Invalid UTF-8 in hex"))?;
+            expected_sha[i] = u8::from_str_radix(byte_str, 16)
+                .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "Invalid hex digit"))?;
+        }
+
+        let mut file = std::fs::OpenOptions::new().append(true).open(&file_path)?;
 
         let mut hasher = Sha256::new();
         if meta.written_bytes > 0 {
@@ -198,15 +208,6 @@ impl Transaction {
             file.seek(SeekFrom::Start(meta.written_bytes))?;
         }
 
-        let mut expected_sha = [0u8; 32];
-
-        for (i, chunk) in meta.expected_sha.as_bytes().chunks(2).enumerate() {
-            let byte_str = std::str::from_utf8(chunk)
-                .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "Invalid UTF-8 in hex"))?;
-            expected_sha[i] = u8::from_str_radix(byte_str, 16)
-                .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "Invalid hex digit"))?;
-        }
-
         Ok(Self {
             id: meta.id,
             tmp_path: file_path,
@@ -216,7 +217,7 @@ impl Transaction {
             hasher,
             written_bytes: meta.written_bytes,
             total_size: meta.total_size,
-            meta_path: tmp_dir.join(format!("{}.meta", meta.filename)),
+            meta_path: tmp_dir.with_extension("meta"),
         })
     }
 

@@ -44,23 +44,41 @@ impl FileStorage {
         )
     }
     pub fn resume_transaction(&self, filename: &str) -> io::Result<Transaction> {
-        let meta: TransactionMeta = self.find_existing_meta(filename)?.ok_or(io::Error::new(
-            io::ErrorKind::UnexpectedEof,
-            "Transaction meta not found unexpectedly",
-        ))?;
-
-        Transaction::resume(meta)
+        println!("checking transaction whether already exist...");
+        let meta = self.find_existing_meta(filename);
+        let meta = meta?;
+        if let Some(tm) = meta {
+            println!("resuming found for {}", filename);
+            Transaction::resume(tm)
+        } else {
+            println!("transaction not found, create new one");
+            Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "Transaction not found",
+            ))
+        }
     }
 
     fn find_existing_meta(&self, filename: &str) -> io::Result<Option<TransactionMeta>> {
-        let tmp_path = self.tmp_dir.join(format!("{}.part", filename));
-        let meta_path = self.tmp_dir.join(format!("{}.meta", filename));
-        if meta_path.exists() && tmp_path.exists() {
-            let meta = TransactionMeta::load(&meta_path)?;
-            Ok(Some(meta))
-        } else {
-            Ok(None)
+        if !self.tmp_dir.exists() {
+            return Ok(None);
         }
+
+        let entries: Vec<_> = fs::read_dir(&self.tmp_dir)?.collect();
+
+        for entry in entries.into_iter() {
+            let entry = entry?;
+            if entry.file_type()?.is_dir() {
+                let transaction_dir = entry.path();
+                let tmp_path = transaction_dir.join(format!("{}.part", filename));
+                let meta_path = transaction_dir.join(format!("{}.meta", filename));
+                if meta_path.exists() && tmp_path.exists() {
+                    let meta = TransactionMeta::load(&meta_path)?;
+                    return Ok(Some(meta));
+                }
+            }
+        }
+        Ok(None)
     }
 }
 
@@ -72,5 +90,15 @@ mod tests {
     fn test_new() {
         let fs = FileStorage::new("/storage").unwrap();
         println!("fs: {:?}", fs)
+    }
+    #[test]
+    fn test_find_existing_meta() -> io::Result<()> {
+        let project_root = std::env::current_dir()?.parent().unwrap().to_path_buf();
+        let storage_tmp = project_root.join("storage");
+        let fs = FileStorage::new(&storage_tmp).unwrap();
+        let result = fs.find_existing_meta("test2.docx")?;
+        println!("res: {:#?}", result);
+
+        Ok(())
     }
 }

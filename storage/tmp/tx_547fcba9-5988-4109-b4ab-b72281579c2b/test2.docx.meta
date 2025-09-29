@@ -1,8 +1,0 @@
-{
-  "id": "tx_547fcba9-5988-4109-b4ab-b72281579c2b",
-  "filename": "test2.docx",
-  "final_path": "./storage/final/test2.docx",
-  "expected_sha": "4eab02dea031b941c4e1bf0f4b273c85c8b8a05fc939b28a7dd1433777ff9c2f",
-  "written_bytes": 2118756,
-  "total_size": 2118756
-}
