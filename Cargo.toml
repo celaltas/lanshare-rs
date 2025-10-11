@@ -4,6 +4,6 @@ members = [
     "lanshare-proto",
     "lanshare-cli",
     "lanshare-tests",
-    "lanshare-rs"
-]
+    "lanshare-rs",
+    "lanshare-discovery"]
 resolver = "2"

@@ -1,0 +1,8 @@
+[package]
+name = "lanshare-discovery"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+mdns-sd = "0.15.1"
+flume = "0.11"

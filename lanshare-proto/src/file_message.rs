@@ -101,7 +101,7 @@ impl FileMessage {
 
     pub fn skip_bytes<R: Read>(stream: &mut R, bytes_to_skip: u64) -> io::Result<()> {
         let mut remaining = bytes_to_skip;
-        let mut buffer = [0u8; 8192]; 
+        let mut buffer = [0u8; 8192];
 
         while remaining > 0 {
             let to_read = std::cmp::min(remaining, buffer.len() as u64) as usize;

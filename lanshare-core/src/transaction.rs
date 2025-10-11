@@ -217,7 +217,10 @@ impl Transaction {
             hasher,
             written_bytes: meta.written_bytes,
             total_size: meta.total_size,
-            meta_path: tmp_dir.with_extension("meta"),
+            meta_path: tmp_dir
+                .parent()
+                .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "No parent dir"))?
+                .join(format!("{}.meta", meta.filename)),
         })
     }
 

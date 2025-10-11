@@ -3,9 +3,11 @@ use std::{io, thread};
 
 use lanshare_proto::{FileMessage, MessageHeader};
 
+use crate::discovery_manager::DiscoveryManager;
 use crate::storage::FileStorage;
 
 pub fn run_server() -> io::Result<()> {
+    let manager = DiscoveryManager::new();
     let listener = TcpListener::bind("127.0.0.1:8080")?;
     println!("Server is running at 8080");
     for stream in listener.incoming() {
@@ -70,21 +72,19 @@ fn handle_connection(mut stream: TcpStream) {
                 "Need to skip {} bytes and read {} more bytes",
                 already_written, remaining
             );
-
             if already_written > 0 {
                 println!(
                     "Skipping {} bytes that we already wrote...",
                     already_written
                 );
-                let _ = FileMessage::skip_bytes(&mut stream, already_written);
+                FileMessage::skip_bytes(&mut stream, already_written)
+            } else {
+                println!("Reading remaining {} bytes...", remaining);
+                FileMessage::receive(&mut stream, &mut writer, remaining)
             }
-
-            println!("Reading remaining {} bytes...", remaining);
-            FileMessage::receive(&mut stream, &mut writer, remaining)
         } else {
             println!("File already complete, skipping entire stream");
-            let _ = FileMessage::skip_bytes(&mut stream, header.size);
-            Ok(())
+            FileMessage::skip_bytes(&mut stream, header.size)
         }
     };
 
