@@ -1,9 +1,9 @@
 use std::net::{TcpListener, TcpStream};
 use std::{io, thread};
 
+use lanshare_discovery::DiscoveryManager;
 use lanshare_proto::{FileMessage, MessageHeader};
 
-use crate::discovery_manager::DiscoveryManager;
 use crate::storage::FileStorage;
 
 pub fn run_server() -> io::Result<()> {
