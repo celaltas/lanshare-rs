@@ -1,19 +1,26 @@
 use std::net::{TcpListener, TcpStream};
+use std::sync::Arc;
 use std::{io, thread};
 
 use lanshare_discovery::DiscoveryManager;
 use lanshare_proto::{FileMessage, MessageHeader};
 
 use crate::storage::FileStorage;
+use crate::transaction::Transaction;
 
 pub fn run_server() -> io::Result<()> {
-    let manager = DiscoveryManager::new();
+    let _manager = DiscoveryManager::new();
     let listener = TcpListener::bind("127.0.0.1:8080")?;
     println!("Server is running at 8080");
+
+    let fs = FileStorage::new("./storage")?;
+    let fs_arc = Arc::new(fs);
+
     for stream in listener.incoming() {
         match stream {
             Ok(s) => {
-                thread::spawn(|| handle_connection(s));
+                let fs_clone = Arc::clone(&fs_arc);
+                thread::spawn(|| handle_connection(s, fs_clone));
             }
             Err(e) => {
                 eprintln!("Error: {}", e);
@@ -23,7 +30,7 @@ pub fn run_server() -> io::Result<()> {
     Ok(())
 }
 
-fn handle_connection(mut stream: TcpStream) {
+fn handle_connection(mut stream: TcpStream, fs: Arc<FileStorage>) {
     let header = match MessageHeader::read_from(&mut stream) {
         Ok(h) => h,
         Err(e) => {
@@ -34,59 +41,12 @@ fn handle_connection(mut stream: TcpStream) {
 
     println!("Receiving file: {} ({} bytes)", header.name, header.size);
 
-    let fs = match FileStorage::new("./storage") {
-        Ok(fs) => fs,
-        Err(e) => {
-            eprintln!("Failed to initialize file storage: {}", e);
-            return;
-        }
+    let mut tx = match fs.get_or_create_transaction(&header) {
+        Ok(tx) => tx,
+        Err(_) => return,
     };
 
-    let mut tx = match fs.resume_transaction(&header.name) {
-        Ok(tx) => {
-            println!(
-                "Resumed transaction: {} (already {} bytes written)",
-                tx.id, tx.written_bytes
-            );
-            tx
-        }
-        Err(_) => match fs.create_transaction(&header.name, header.size, header.sha256) {
-            Ok(tx) => {
-                println!("Started new transaction: {}", tx.id);
-                tx
-            }
-            Err(e) => {
-                eprintln!("Failed to create transaction: {}", e);
-                return;
-            }
-        },
-    };
-
-    let result = {
-        let already_written = tx.written_bytes;
-        let mut writer = tx.writer();
-        let remaining = header.size.saturating_sub(already_written);
-
-        if remaining > 0 {
-            println!(
-                "Need to skip {} bytes and read {} more bytes",
-                already_written, remaining
-            );
-            if already_written > 0 {
-                println!(
-                    "Skipping {} bytes that we already wrote...",
-                    already_written
-                );
-                FileMessage::skip_bytes(&mut stream, already_written)
-            } else {
-                println!("Reading remaining {} bytes...", remaining);
-                FileMessage::receive(&mut stream, &mut writer, remaining)
-            }
-        } else {
-            println!("File already complete, skipping entire stream");
-            FileMessage::skip_bytes(&mut stream, header.size)
-        }
-    };
+    let result = process_file_transfer(stream, &mut tx, header.size);
 
     match result {
         Ok(_) => match tx.commit() {
@@ -114,5 +74,35 @@ fn handle_connection(mut stream: TcpStream) {
                 println!("Rollback done!");
             }
         }
+    }
+}
+
+fn process_file_transfer(
+    mut stream: TcpStream,
+    tx: &mut Transaction,
+    header_size: u64,
+) -> io::Result<()> {
+    let already_written = tx.written_bytes;
+    let mut writer = tx.writer();
+    let remaining = header_size.saturating_sub(already_written);
+
+    if remaining > 0 {
+        println!(
+            "Need to skip {} bytes and read {} more bytes",
+            already_written, remaining
+        );
+        if already_written > 0 {
+            println!(
+                "Skipping {} bytes that we already wrote...",
+                already_written
+            );
+            FileMessage::skip_bytes(&mut stream, already_written)
+        } else {
+            println!("Reading remaining {} bytes...", remaining);
+            FileMessage::receive(&mut stream, &mut writer, remaining)
+        }
+    } else {
+        println!("File already complete, skipping entire stream");
+        FileMessage::skip_bytes(&mut stream, header_size)
     }
 }

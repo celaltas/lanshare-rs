@@ -4,6 +4,7 @@ use std::net::TcpStream;
 pub enum Command {
     Send,
     SendPartial,
+    Serve,
 }
 
 fn main() {
@@ -89,6 +90,9 @@ fn main() {
                     std::process::exit(1);
                 }
             }
+        }
+        Command::Serve => {
+            
         }
     }
 }

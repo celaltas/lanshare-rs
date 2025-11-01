@@ -35,6 +35,28 @@ impl MessageHeader {
         stream.write_all(&self.sha256)?;
         Ok(())
     }
+
+    pub fn validate(&self) -> io::Result<()> {
+        if self.name.is_empty() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Name cannot be empty",
+            ));
+        }
+        if self.size == 0 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Size cannot be zero",
+            ));
+        }
+        if self.sha256 == [0u8; 32] {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "SHA256 hash cannot be zero",
+            ));
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]

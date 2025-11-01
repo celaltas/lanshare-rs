@@ -29,6 +29,34 @@ impl FileStorage {
         })
     }
 
+    pub fn get_or_create_transaction(
+        &self,
+        header: &lanshare_proto::MessageHeader,
+    ) -> io::Result<Transaction> {
+        match self.resume_transaction(&header.name) {
+            Ok(tx) => {
+                println!(
+                    "Resumed transaction: {} (already {} bytes written)",
+                    tx.id, tx.written_bytes
+                );
+                Ok(tx)
+            }
+            Err(e) if e.kind() == io::ErrorKind::NotFound => {
+                match self.create_transaction(&header.name, header.size, header.sha256) {
+                    Ok(tx) => {
+                        println!("Started new transaction: {}", tx.id);
+                        Ok(tx)
+                    }
+                    Err(e) => {
+                        eprintln!("Failed to create transaction: {}", e);
+                        Err(e)
+                    }
+                }
+            }
+            Err(e) => Err(e),
+        }
+    }
+
     pub fn create_transaction(
         &self,
         filename: &str,
