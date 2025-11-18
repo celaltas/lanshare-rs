@@ -48,16 +48,18 @@ impl IPCServer {
     pub fn start(&mut self) -> Result<(), IPCError> {
         self.initialize_socket()?;
         let self_clone = self.clone();
-        let path = self.socket_path.to_path_buf();
         let shutdown = self.shutdown.clone();
-        let handle = thread::spawn(move || self_clone.run_listener(shutdown, path));
+        let handle = thread::spawn(move || self_clone.run_listener(shutdown));
         self.listener_handle = Some(handle);
         Ok(())
     }
 
     fn initialize_socket(&self) -> Result<(), IPCError> {
-        fs::remove_file(self.socket_path.as_path())
-            .map_err(|_e| IPCError::Other("Failed to remove socket".into()))?;
+        let is_file_exist = fs::metadata(self.socket_path.as_path()).is_ok();
+        if is_file_exist {
+            fs::remove_file(self.socket_path.as_path())
+                .map_err(|_e| IPCError::Other("Failed to remove socket".into()))?;
+        }
         Ok(())
     }
 
@@ -87,11 +89,11 @@ impl IPCServer {
         Ok(true)
     }
 
-    fn run_listener(&self, shutdown: Arc<AtomicBool>, socket_path: PathBuf) {
-        let listener = match UnixListener::bind(&socket_path) {
+    fn run_listener(&self, shutdown: Arc<AtomicBool>) {
+        let listener = match self.bind_socket() {
             Ok(l) => l,
             Err(e) => {
-                eprintln!("Failed to bind socket: {}", e);
+                eprintln!("Failed to bind socket: {:?}", e);
                 return;
             }
         };
@@ -106,10 +108,15 @@ impl IPCServer {
 
             match listener.accept() {
                 Ok((stream, _addr)) => {
-                    println!("accept a new client from {:#?}", _addr);
-                    let _ = self.validate_connection(&stream).map(|_| {
-                        let _ = self.handle_connection(stream);
-                    });
+                    match self.validate_connection(&stream) {
+                        Ok(_) => match self.handle_connection(stream) {
+                            Ok(_) => println!("Connection handled successfully"),
+                            Err(_) => eprintln!("Error handling connection"),
+                        },
+                        Err(e) => {
+                            eprintln!("Error validating connection: {:?}", e);
+                        }
+                    };
                 }
                 Err(e) => {
                     eprintln!("Error accepting connection: {}", e);
@@ -124,10 +131,9 @@ impl IPCServer {
     ) -> Result<Option<serde_json::Value>, IPCError> {
         let mut reader = BufReader::new(client_socket);
         let mut line = String::new();
-
-        match reader.read_line(&mut line) {
+        let res = match reader.read_line(&mut line) {
             Ok(0) => Ok(None),
-            Ok(_) => {
+            Ok(n) => {
                 let trimmed = line.trim_end_matches(|c: char| c.is_whitespace());
                 if trimmed.is_empty() {
                     Ok(None)
@@ -142,22 +148,41 @@ impl IPCServer {
                 "Failed to read from socket: {}",
                 e
             ))),
-        }
+        };
+
+        res
     }
 
     fn handle_connection(&self, client_socket: UnixStream) -> Result<(), IPCError> {
-        if let Some(request) = self.read_request(&client_socket)? {
-            self.handle_command(request)?;
-            let response = self.create_success_response(None, "ok")?;
-            self.send_response(client_socket, response)?;
-        } else {
-            self.clean_connection(client_socket)?;
+        match self.read_request(&client_socket) {
+            Ok(Some(request)) => match self.handle_command(request) {
+                Ok(response) => self.send_response(client_socket, response),
+                Err(handle_error) => {
+                    let response = self.create_error_response(
+                        None,
+                        "Failed to handle command".to_string(),
+                        "HANDLE_ERROR".to_string(),
+                    )?;
+                    let _ = self.send_response(client_socket, response);
+                    Err(handle_error)
+                }
+            },
+            Ok(None) => self.clean_connection(client_socket),
+            Err(read_error) => {
+                let response = self.create_error_response(
+                    None,
+                    "Failed to read request".to_string(),
+                    "READ_ERROR".to_string(),
+                )?;
+                let _ = self.send_response(client_socket, response);
+                Err(read_error)
+            }
         }
-        Ok(())
     }
 
-    fn handle_list_peers(&self, id: Option<u64>) {
-        println!("handle_list_peers - ID: {:?}", id);
+    fn handle_list_peers(&self, id: Option<u64>) -> Result<Vec<u8>, IPCError> {
+        let peers = vec!["test1", "test2"];
+        Ok(self.create_success_response(id, peers)?)
     }
 
     fn handle_send_file(
@@ -166,25 +191,23 @@ impl IPCServer {
         path: String,
         peer: String,
         file_name: Option<String>,
-    ) {
-        println!(
-            "handle_send_file - ID: {:?}, Path: {}, Peer: {}, File Name: {:?}",
-            id, path, peer, file_name
-        );
+    ) -> Result<Vec<u8>, IPCError> {
+        Ok(self.create_success_response(id, "ok")?)
     }
 
-    fn handle_get_status(&self, id: Option<u64>) {
-        println!("handle_get_status - ID: {:?}", id);
+    fn handle_get_status(&self, id: Option<u64>) -> Result<Vec<u8>, IPCError> {
+        Ok(self.create_success_response(id, "ok")?)
     }
 
-    fn handle_cancel_transfer(&self, id: Option<u64>, transfer_id: String) {
-        println!(
-            "handle_cancel_transfer - ID: {:?}, Transfer ID: {}",
-            id, transfer_id
-        );
+    fn handle_cancel_transfer(
+        &self,
+        id: Option<u64>,
+        transfer_id: String,
+    ) -> Result<Vec<u8>, IPCError> {
+        Ok(self.create_success_response(id, "ok")?)
     }
 
-    fn handle_command(&self, raw: serde_json::Value) -> Result<(), IPCError> {
+    fn handle_command(&self, raw: serde_json::Value) -> Result<Vec<u8>, IPCError> {
         match serde_json::from_value::<CommandRequest>(raw) {
             Ok(cmd) => match cmd {
                 CommandRequest::ListPeers { id } => self.handle_list_peers(id),
@@ -201,8 +224,6 @@ impl IPCServer {
             },
             Err(_) => return Err(IPCError::Other("Failed to parse command".to_string())),
         }
-
-        Ok(())
     }
 
     fn create_success_response<T: Serialize>(
@@ -273,5 +294,30 @@ impl IPCServer {
             }
         }
         println!("Shutdown complete.");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{io::Read, time::Duration};
+
+    use super::*;
+
+    #[test]
+    fn test_handle_list_peers() {
+        let socket_path = PathBuf::from("/tmp/lanshare-ipc-test.sock");
+        let shutdown = Arc::new(AtomicBool::new(false));
+        let mut server = IPCServer::new(socket_path.clone(), shutdown);
+        let server_handle = thread::spawn(move || server.start().unwrap());
+        thread::sleep(Duration::from_millis(50));
+
+        let mut stream = UnixStream::connect(socket_path).unwrap();
+        stream.write_all(b"hello world\n").unwrap();
+        let mut response = String::new();
+        stream.read_to_string(&mut response).unwrap();
+        assert_eq!(response, "ok");
+        server_handle.join().expect("Server thread panicked");
+
+        println!("Test completed successfully!");
     }
 }

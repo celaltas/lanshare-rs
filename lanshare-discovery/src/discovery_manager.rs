@@ -75,3 +75,21 @@ impl DiscoveryManager {
         println!("[Cleaner] Thread stopped");
     }
 }
+
+impl DiscoveryApi for DiscoveryManager {
+    fn list_peers(&self) -> Result<Vec<PeerApi>, ApiError> {
+        let internal_peers = self.get_peers_internal();
+
+        let api_peers: Vec<PeerApi> = internal_peers
+            .into_iter()
+            .map(|internal_peer| PeerApi {
+                name: internal_peer.name,
+                ip: internal_peer.ip.to_string(),
+                port: internal_peer.port,
+                last_seen: internal_peer.last_seen.to_rfc3339(),
+            })
+            .collect();
+
+        Ok(api_peers)
+    }
+}

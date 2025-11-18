@@ -144,6 +144,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "lanshare-api"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "lanshare-cli"
 version = "0.1.0"
 dependencies = [
