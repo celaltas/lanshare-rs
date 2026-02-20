@@ -10,8 +10,8 @@
 
 #### Faz 2: Protokol Katmanının Temizlenmesi (Proto)
 
-* [ ] **2.1.** `lanshare-proto/src/file_message.rs` dosyasına gir ve içindeki `std::fs::File`, `std::path::Path` gibi disk bağımlılıklarını tamamen sil.
-* [ ] **2.2.** Mesaj okuma/yazma fonksiyonlarını (`send`, `receive`, `send_partial`), doğrudan `std::fs::File` almak yerine sadece genel `std::io::Read` ve `std::io::Write` trait'lerini (veya byte dizilerini) kabul edecek şekilde refactor et. Böylece proto sadece ağ paketi yapmayı bilecek.
+* [x] **2.1.** `lanshare-proto/src/file_message.rs` dosyasına gir ve içindeki `std::fs::File`, `std::path::Path` gibi disk bağımlılıklarını tamamen sil.
+* [x] **2.2.** Mesaj okuma/yazma fonksiyonlarını (`send`, `receive`, `send_partial`), doğrudan `std::fs::File` almak yerine sadece genel `std::io::Read` ve `std::io::Write` trait'lerini (veya byte dizilerini) kabul edecek şekilde refactor et. Böylece proto sadece ağ paketi yapmayı bilecek.
 
 #### Faz 3: İş Mantığının Kurulması (Application / Use Cases)
 
