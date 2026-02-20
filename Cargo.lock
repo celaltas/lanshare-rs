@@ -144,12 +144,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "lanshare-api"
+name = "lanshare-app"
 version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "lanshare-cli"
@@ -176,6 +172,14 @@ version = "0.1.0"
 dependencies = [
  "flume",
  "mdns-sd",
+]
+
+[[package]]
+name = "lanshare-domain"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
