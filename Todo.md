@@ -15,9 +15,9 @@
 
 #### Faz 3: İş Mantığının Kurulması (Application / Use Cases)
 
-* [ ] **3.1.** `lanshare-app` adında yeni bir library crate oluştur ve `lanshare-domain`'i buna bağla.
-* [ ] **3.2.** `lanshare-app/src/use_cases/receive_file.rs` oluştur. Burada TCP'den bağımsız olarak "gelen byte'ları StoragePort'a yaz" mantığını kur.
-* [ ] **3.3.** `lanshare-app/src/use_cases/send_file.rs` oluştur. Burada "dosyayı StoragePort'tan oku, NetworkPort'a ver" mantığını kur.
+* [x] **3.1.** `lanshare-app` adında yeni bir library crate oluştur ve `lanshare-domain`'i buna bağla.
+* [x] **3.2.** `lanshare-app/src/use_cases/receive_file.rs` oluştur. Burada TCP'den bağımsız olarak "gelen byte'ları StoragePort'a yaz" mantığını kur.
+* [x] **3.3.** `lanshare-app/src/use_cases/send_file.rs` oluştur. Burada "dosyayı StoragePort'tan oku, NetworkPort'a ver" mantığını kur.
 
 #### Faz 4: Depolama Adaptörünün Çıkarılması (Storage Adapter)
 

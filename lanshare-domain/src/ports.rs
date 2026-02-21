@@ -1,9 +1,9 @@
 use crate::models::{DomainError, FileBlock, FileManifest, Peer};
 
 pub trait StoragePort: Send + Sync {
-    fn create_file_manifest(&self, file_name: &str) -> Result<FileManifest, DomainError>;
+    fn create_file_manifest(&self, file_path: &str) -> Result<FileManifest, DomainError>;
     fn prepare_for_receive(&self, manifest: &FileManifest) -> Result<(), DomainError>;
-    fn written_bytes(&self, file_id: &str) -> Result<u64, DomainError>;
+    fn get_written_bytes(&self, file_id: &str) -> Result<u64, DomainError>;
 
     fn read_block(
         &self,

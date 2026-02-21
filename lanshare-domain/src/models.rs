@@ -9,7 +9,9 @@ pub struct Peer {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum DomainError {}
+pub enum DomainError {
+    ProtocolError,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileManifest {

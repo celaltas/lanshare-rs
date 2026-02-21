@@ -7,7 +7,7 @@ use crate::{
     },
 };
 
-fn encode_message<W: Write>(writer: &mut W, message: &LanShareMessage) -> Result<(), ProtoError> {
+pub fn encode_message<W: Write>(writer: &mut W, message: &LanShareMessage) -> Result<(), ProtoError> {
     match message {
         LanShareMessage::TransferRequest(TransferRequestPayload { name, size, sha256 }) => {
             writer.write_all(b"TQ")?;
@@ -41,7 +41,7 @@ fn encode_message<W: Write>(writer: &mut W, message: &LanShareMessage) -> Result
     }
 }
 
-fn decode_message<R: Read>(reader: &mut R) -> Result<LanShareMessage, ProtoError> {
+pub fn decode_message<R: Read>(reader: &mut R) -> Result<LanShareMessage, ProtoError> {
     let mut buffer = [0; 2];
     reader.read_exact(&mut buffer)?;
 
