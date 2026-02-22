@@ -4,7 +4,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use lanshare_domain::{FileBlock, FileManifest, StoragePort, error::DomainError};
+use lanshare_domain::{
+    error::DomainError,
+    models::{FileBlock, FileManifest},
+    ports::StoragePort,
+};
 
 use crate::{
     hash::{compute_file_sha256, sha_to_hex},

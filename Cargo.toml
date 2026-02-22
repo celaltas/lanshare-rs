@@ -1,9 +1,8 @@
 [workspace]
 members = [
-    "lanshare-core",
     "lanshare-proto",
     "lanshare-cli",
     "lanshare-tests",
     "lanshare-rs",
-    "lanshare-discovery", "lanshare-ipc", "lanshare-domain", "lanshare-app", "lanshare-storage"]
+    "lanshare-discovery", "lanshare-ipc", "lanshare-domain", "lanshare-app", "lanshare-storage", "lanshare-network"]
 resolver = "2"

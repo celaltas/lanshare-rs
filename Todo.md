@@ -27,10 +27,10 @@
 
 #### Faz 5: Ağ Adaptörünün Çıkarılması (Network Adapter)
 
-* [ ] **5.1.** `lanshare-network` adında yeni bir library crate oluştur. Bağımlılık olarak `lanshare-domain`, `lanshare-app` ve `lanshare-proto`'yu ekle.
-* [ ] **5.2.** `lanshare-core/src/server.rs` içindeki TCP soket dinleme mantığını buraya taşı.
-* [ ] **5.3.** Bu katmanın `lanshare-domain::NetworkPort` trait'ini implement etmesini sağla ve soketten gelen istekleri doğrudan `lanshare-app`'teki ilgili UseCase'lere pasla.
-* [ ] **5.4.** İçini tamamen boşalttığımız `lanshare-core` crate'ini projeden sil.
+* [x] **5.1.** `lanshare-network` adında yeni bir library crate oluştur. Bağımlılık olarak `lanshare-domain`, `lanshare-app` ve `lanshare-proto`'yu ekle.
+* [x] **5.2.** `lanshare-core/src/server.rs` içindeki TCP soket dinleme mantığını buraya taşı.
+* [x] **5.3.** Bu katmanın `lanshare-domain::NetworkPort` trait'ini implement etmesini sağla ve soketten gelen istekleri doğrudan `lanshare-app`'teki ilgili UseCase'lere pasla.
+* [x] **5.4.** İçini tamamen boşalttığımız `lanshare-core` crate'ini projeden sil.
 
 #### Faz 6: Keşif Adaptörünün Uyarlanması (Discovery Adapter)
 

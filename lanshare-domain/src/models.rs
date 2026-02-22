@@ -8,7 +8,18 @@ pub struct Peer {
     pub last_seen: u64,
 }
 
-
+impl Peer {
+    pub fn new(name: String, address: SocketAddr, last_seen: u64) -> Self {
+        Peer {
+            name,
+            address,
+            last_seen,
+        }
+    }
+    pub fn address(&self) -> &SocketAddr {
+        &self.address
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileManifest {

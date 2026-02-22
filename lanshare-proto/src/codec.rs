@@ -3,11 +3,15 @@ use std::io::{Read, Write};
 use crate::{
     error::ProtoError,
     messages::{
-        DataChunkPayload, LanShareMessage, TransferRequestPayload, TransferResponsePayload,
+        DataChunkPayload, ErrorPayload, LanShareMessage, TransferRequestPayload,
+        TransferResponsePayload,
     },
 };
 
-pub fn encode_message<W: Write>(writer: &mut W, message: &LanShareMessage) -> Result<(), ProtoError> {
+pub fn encode_message<W: Write>(
+    writer: &mut W,
+    message: &LanShareMessage,
+) -> Result<(), ProtoError> {
     match message {
         LanShareMessage::TransferRequest(TransferRequestPayload { name, size, sha256 }) => {
             writer.write_all(b"TQ")?;
@@ -36,6 +40,13 @@ pub fn encode_message<W: Write>(writer: &mut W, message: &LanShareMessage) -> Re
             let data_len = data.len() as u32;
             writer.write_all(&data_len.to_le_bytes())?;
             writer.write_all(data)?;
+            Ok(())
+        }
+        LanShareMessage::Error(ErrorPayload { message }) => {
+            writer.write_all(b"ER")?;
+            let msg_bytes = message.as_bytes();
+            writer.write_all(&(msg_bytes.len() as u32).to_le_bytes())?;
+            writer.write_all(msg_bytes)?;
             Ok(())
         }
     }
@@ -89,6 +100,17 @@ pub fn decode_message<R: Read>(reader: &mut R) -> Result<LanShareMessage, ProtoE
                 offset,
                 data,
             }))
+        }
+        [b'E', b'R'] => {
+            let mut len_buf = [0u8; 4];
+            reader.read_exact(&mut len_buf)?;
+            let msg_len = u32::from_le_bytes(len_buf) as usize;
+
+            let mut msg_buf = vec![0u8; msg_len];
+            reader.read_exact(&mut msg_buf)?;
+            let message = String::from_utf8_lossy(&msg_buf).to_string();
+
+            Ok(LanShareMessage::Error(ErrorPayload { message }))
         }
         _ => Err(ProtoError::InvalidMessage),
     }

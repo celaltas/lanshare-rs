@@ -1,0 +1,10 @@
+[package]
+name = "lanshare-network"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+lanshare-domain = { path = "../lanshare-domain" }
+lanshare-proto = { path = "../lanshare-proto" }
+lanshare-app = { path = "../lanshare-app" }
+uuid = { version = "1.11", features = ["v4"] }

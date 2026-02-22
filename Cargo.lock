@@ -159,18 +159,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lanshare-core"
-version = "0.1.0"
-dependencies = [
- "lanshare-discovery",
- "lanshare-proto",
- "serde",
- "serde_json",
- "sha2",
- "uuid",
-]
-
-[[package]]
 name = "lanshare-discovery"
 version = "0.1.0"
 dependencies = [
@@ -195,6 +183,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "lanshare-network"
+version = "0.1.0"
+dependencies = [
+ "lanshare-app",
+ "lanshare-domain",
+ "lanshare-proto",
+ "uuid",
+]
+
+[[package]]
 name = "lanshare-proto"
 version = "0.1.0"
 dependencies = [
@@ -206,9 +204,6 @@ dependencies = [
 [[package]]
 name = "lanshare-rs"
 version = "0.1.0"
-dependencies = [
- "lanshare-core",
-]
 
 [[package]]
 name = "lanshare-storage"

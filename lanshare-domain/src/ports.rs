@@ -18,8 +18,12 @@ pub trait StoragePort: Send + Sync {
     fn cancel_transfer(&self, file_id: &str) -> Result<(), DomainError>;
 }
 
+pub trait NetworkConnection {
+    fn send(&mut self, data: &[u8]) -> Result<(), DomainError>;
+}
+
 pub trait NetworkPort: Send + Sync {
-    fn send_data(&self, peer: &Peer, data: &[u8]) -> Result<(), DomainError>;
+    fn connect(&self, peer: &Peer) -> Result<Box<dyn NetworkConnection>, DomainError>;
 }
 
 pub trait DiscoveryPort: Send + Sync {

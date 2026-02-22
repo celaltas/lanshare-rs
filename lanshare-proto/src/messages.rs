@@ -2,6 +2,7 @@ pub enum LanShareMessage {
     TransferRequest(TransferRequestPayload),
     TransferResponse(TransferResponsePayload),
     DataChunk(DataChunkPayload),
+    Error(ErrorPayload),
 }
 
 pub struct TransferRequestPayload {
@@ -17,4 +18,7 @@ pub struct TransferResponsePayload {
 pub struct DataChunkPayload {
     pub offset: u64,
     pub data: Vec<u8>,
+}
+pub struct ErrorPayload {
+    pub message: String,
 }

@@ -1,4 +1,8 @@
-use lanshare_domain::{DomainError, FileBlock, FileManifest, StoragePort};
+use lanshare_domain::{
+    error::DomainError,
+    models::{FileBlock, FileManifest},
+    ports::StoragePort,
+};
 
 pub struct ReceiveFileUseCase<S: StoragePort> {
     storage: S,
