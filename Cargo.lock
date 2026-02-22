@@ -211,6 +211,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "lanshare-storage"
+version = "0.1.0"
+dependencies = [
+ "lanshare-domain",
+ "serde",
+ "serde_json",
+ "sha2",
+ "uuid",
+]
+
+[[package]]
 name = "lanshare-tests"
 version = "0.1.0"
 

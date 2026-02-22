@@ -5,5 +5,5 @@ members = [
     "lanshare-cli",
     "lanshare-tests",
     "lanshare-rs",
-    "lanshare-discovery", "lanshare-ipc", "lanshare-domain", "lanshare-app"]
+    "lanshare-discovery", "lanshare-ipc", "lanshare-domain", "lanshare-app", "lanshare-storage"]
 resolver = "2"

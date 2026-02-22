@@ -21,9 +21,9 @@
 
 #### Faz 4: Depolama Adaptörünün Çıkarılması (Storage Adapter)
 
-* [ ] **4.1.** `lanshare-storage` adında yeni bir library crate oluştur. Bağımlılık olarak `lanshare-domain`'i ekle.
-* [ ] **4.2.** `lanshare-core` içindeki `storage.rs` ve `transaction.rs` dosyalarını buraya taşı.
-* [ ] **4.3.** Taşınan bu yapıların `lanshare-domain::StoragePort` trait'ini implement etmesini (uygulamasını) sağla. (İşte burada diske yazma işlemi gerçekleşecek).
+* [x] **4.1.** `lanshare-storage` adında yeni bir library crate oluştur. Bağımlılık olarak `lanshare-domain`'i ekle.
+* [x] **4.2.** `lanshare-core` içindeki `storage.rs` ve `transaction.rs` dosyalarını buraya taşı.
+* [x] **4.3.** Taşınan bu yapıların `lanshare-domain::StoragePort` trait'ini implement etmesini (uygulamasını) sağla. (İşte burada diske yazma işlemi gerçekleşecek).
 
 #### Faz 5: Ağ Adaptörünün Çıkarılması (Network Adapter)
 

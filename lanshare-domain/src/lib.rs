@@ -1,5 +1,6 @@
+pub mod error;
 mod models;
 mod ports;
 
-pub use ports::{StoragePort, NetworkPort, DiscoveryPort};
-pub use models::{FileManifest, FileBlock, Peer, DomainError};
+pub use models::{FileBlock, FileManifest, Peer};
+pub use ports::{DiscoveryPort, NetworkPort, StoragePort};

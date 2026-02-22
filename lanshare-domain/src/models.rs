@@ -8,10 +8,7 @@ pub struct Peer {
     pub last_seen: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub enum DomainError {
-    ProtocolError,
-}
+
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileManifest {
