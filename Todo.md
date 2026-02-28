@@ -34,8 +34,8 @@
 
 #### Faz 6: Keşif Adaptörünün Uyarlanması (Discovery Adapter)
 
-* [ ] **6.1.** Mevcut `lanshare-discovery` crate'ine `lanshare-domain` bağımlılığını ekle.
-* [ ] **6.2.** `lanshare-discovery/src/lib.rs` (veya `discovery_manager.rs`) içindeki ana yapının, `lanshare-domain::DiscoveryPort` trait'ini implement etmesini sağla. (Artık ana sistem, mDNS çalıştığını bilmeyecek, sadece `get_peers()` diyecek).
+* [x] **6.1.** Mevcut `lanshare-discovery` crate'ine `lanshare-domain` bağımlılığını ekle.
+* [x] **6.2.** `lanshare-discovery/src/lib.rs` (veya `discovery_manager.rs`) içindeki ana yapının, `lanshare-domain::DiscoveryPort` trait'ini implement etmesini sağla. (Artık ana sistem, mDNS çalıştığını bilmeyecek, sadece `get_peers()` diyecek).
 
 #### Faz 7: Birleştirme ve Haberleşme (Composition Root & IPC)
 
