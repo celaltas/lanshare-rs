@@ -190,6 +190,13 @@ dependencies = [
 [[package]]
 name = "lanshare-rs"
 version = "0.1.0"
+dependencies = [
+ "lanshare-app",
+ "lanshare-discovery",
+ "lanshare-domain",
+ "lanshare-network",
+ "lanshare-storage",
+]
 
 [[package]]
 name = "lanshare-storage"

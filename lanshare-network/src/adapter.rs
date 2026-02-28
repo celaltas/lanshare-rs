@@ -30,6 +30,12 @@ impl NetworkConnection for TCPConnection {
 
 pub struct TcpNetworkAdapter {}
 
+impl TcpNetworkAdapter {
+    pub fn new() -> Self {
+        TcpNetworkAdapter {}
+    }
+}
+
 impl NetworkPort for TcpNetworkAdapter {
     fn connect(&self, peer: &Peer) -> Result<Box<dyn NetworkConnection>, DomainError> {
         let socket = TcpStream::connect(peer.address())?;

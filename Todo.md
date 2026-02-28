@@ -39,6 +39,6 @@
 
 #### Faz 7: Birleştirme ve Haberleşme (Composition Root & IPC)
 
-* [ ] **7.1.** `lanshare-rs/src/main.rs` (Ana Daemon) içine gir. Storage, Network ve Discovery adaptörlerini burada ayağa kaldır (`new()` ile).
-* [ ] **7.2.** Bu adaptörleri `lanshare-app` yöneticilerine (Dependency Injection ile) enjekte et.
-* [ ] **7.3.** `lanshare-ipc` üzerinden gelen CLI komutlarını alıp `lanshare-app` katmanına yönlendir.
+* [x] **7.1.** `lanshare-rs/src/main.rs` (Ana Daemon) içine gir. Storage, Network ve Discovery adaptörlerini burada ayağa kaldır (`new()` ile).
+* [x] **7.2.** Bu adaptörleri `lanshare-app` yöneticilerine (Dependency Injection ile) enjekte et.
+* [] **7.3.** `lanshare-ipc` üzerinden gelen CLI komutlarını alıp `lanshare-app` katmanına yönlendir.
