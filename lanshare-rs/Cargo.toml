@@ -10,3 +10,4 @@ lanshare-discovery = { path = "../lanshare-discovery" }
 lanshare-storage = { path = "../lanshare-storage" }
 lanshare-network = { path = "../lanshare-network" }
 lanshare-app = { path = "../lanshare-app" }
+lanshare-ipc = { path = "../lanshare-ipc" }

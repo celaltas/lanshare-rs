@@ -141,7 +141,8 @@ dependencies = [
 name = "lanshare-cli"
 version = "0.1.0"
 dependencies = [
- "lanshare-proto",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -194,6 +195,7 @@ dependencies = [
  "lanshare-app",
  "lanshare-discovery",
  "lanshare-domain",
+ "lanshare-ipc",
  "lanshare-network",
  "lanshare-storage",
 ]

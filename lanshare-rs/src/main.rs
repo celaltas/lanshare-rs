@@ -1,6 +1,7 @@
 use lanshare_app::use_cases::{receive_file::ReceiveFileUseCase, send_file::SendFileUseCase};
 use lanshare_discovery::adapter::MdnsDiscoveryAdapter;
 use lanshare_domain::{models::Peer, ports::DiscoveryPort};
+use lanshare_ipc::IPCServer;
 use lanshare_network::adapter::TcpNetworkAdapter;
 use lanshare_storage::adapter::LocalFileSystemAdapter;
 use std::{process::exit, sync::Arc, thread};
@@ -41,4 +42,16 @@ fn main() {
     });
 
     println!("LanShare Daemon is running in the background.");
+
+    println!("Starting IPC Server...");
+    let socket_path = std::path::PathBuf::from("/tmp/lanshare.sock");
+    let shutdown_flag = Arc::new(std::sync::atomic::AtomicBool::new(false));
+
+    let mut ipc_server = IPCServer::new(socket_path, shutdown_flag);
+    ipc_server.start().expect("Failed to start IPC server");
+    println!("LanShare Daemon is running in the background. Ready for CLI commands!");
+
+    loop {
+        thread::sleep(std::time::Duration::from_secs(60));
+    }
 }
